@@ -1,19 +1,5 @@
 
 '''
-## Day 2
-
-Task: Implement linked-list chaining for collision resolution.
-
-1. Modify `put()`, `get()`, and `delete()` methods to handle collisions.
-
-2. There is no step 2.
-
-You can test this with:
-
-```
-python test_hashtable.py
-```
-
 Task: Implement load factor measurements and automatic hashtable size
 doubling.
 
@@ -138,11 +124,43 @@ class HashTable:
 
         # Your code here
 
-        self.num_items_in_hash += 1
-        
+        ## linked list
+
+        new_node = HashTableEntry(key, value)
+        #print(new_node.key)
+        #print(new_node.next)
+
         new_hash_index = self.hash_index(key)
+
+        if self.hash_table[new_hash_index] is None:
+            self.hash_table[new_hash_index] = new_node
+            #print(self.hash_table[new_hash_index])
+            # print(self.hash_table[new_hash_index].key)
+            # print(self.hash_table[new_hash_index].value)
+            # print(self.hash_table[new_hash_index].next)
+            #print(self.hash_table)
+
+        #if something is in that slot
+        elif self.hash_table[new_hash_index] is not None:
+            # print("COLLISION")
+            # print(f'current node {self.hash_table[new_hash_index].value}')
+            # print(f'current .next {self.hash_table[new_hash_index].next}')
+
+            #replace the current index with this new one
+            old_node = self.hash_table[new_hash_index]
+            self.hash_table[new_hash_index] = new_node
+            # print(f'new current node {self.hash_table[new_hash_index].value}')
+            self.hash_table[new_hash_index].next = old_node
+            # print(f'new .next {self.hash_table[new_hash_index].next.value}')
+
+
+        ## need logic to overwrite a value with the same key
+        # if the key exists, update value
+        # if it doesn't exist, make a new node
+
+
         # self.hash_list = HashTableEntry(new_hash_index, value)
-        self.hash_table[new_hash_index] = value
+        #self.hash_table[new_hash_index] = value
         '''
         This is getting closer to the right logic for the linked list
 
@@ -159,6 +177,14 @@ class HashTable:
         if self.get_load_factor() > .7:
             self.resize(new_capacity=(self.capacity*2))
 
+#         Stretch: When load factor decreases below `0.2`, automatically rehash
+# the table to half its previous size, down to a minimum of 8 slots.'
+
+        # if self.get_load_factor() < .2:
+        #     self.resize(new_capacity = (self.capacity//2))
+
+
+
     
 
     def delete(self, key):
@@ -174,8 +200,82 @@ class HashTable:
         if key == None:
             print("KEY NOT FOUND")
             return
+
+
         new_hash_index = self.hash_index(key)
-        self.hash_table.pop(new_hash_index)
+        current_node = self.hash_table[new_hash_index]
+        next_node = current_node.next
+
+        #print(current_node.key)
+        #print(next_node.key)
+
+
+        previous_node = None
+
+        while current_node.key != key:
+            if current_node.next == None:
+                print("THERE IS NO NEXT")
+                return None
+            else:
+                previous_node = current_node
+                current_node = current_node.next
+
+        if previous_node == None:
+            self.hash_table[new_hash_index] = current_node.next
+        else:
+            previous_node.next = current_node.next
+                
+            
+    
+
+
+        # if current_node.next == None:
+        #     print("REMOVING ELEMENT FROM HASH TABLE")
+        #     current_node=None
+        # ## if it's a collison:
+        # else:  
+        #     print("DELETE COLLISION")
+        
+        #     current_node=current_node.next
+            # while current_node.next is not None:
+            #     if current_node.key == key:
+            #         print("DELETING")
+            #         current_node = current_node.next
+            #     current_node = current_node.next
+            
+        
+
+            # if current_node.key == key:
+            #     print("DELETING IT")
+            #         #print(current_node.value)
+            #     current_node = current_node.next
+            #     print(current_node)
+
+
+            # while current_node.next is not None:
+            #     print(current_node.key)
+            #     next_node = current_node.next
+            #     print(f'NEXT {next_node.key}')
+            #     ## compare
+            #     #  with original key
+            #     # if key matches, return original value
+            #     if current_node.key == key:
+            #         print("DELETING IT")
+            #         #print(current_node.value)
+            #         current_node = current_node.next
+            #         print(current_node)
+            #     # if not found, return None
+            #     # else:
+            #     #     print("COULDN'T FIND IT")
+            #     #     return None
+            #     #print(f'CURRENT Node {current_node}')
+            #     current_node = current_node.next
+            #     print(f'CURRENT Node {current_node.key}')
+            #     print(f'NEXT Node {current_node.next}')
+            
+            
+            # print("REMOVING ELEMENT FROM HASH TABLE")
+            # current_node = current_node.next
 
 
     def get(self, key):
@@ -187,13 +287,57 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
-        if key == None:
-            print("KEY NOT FOUND")
-            return None
+        # if key == None:
+        #     print("KEY NOT FOUND")
+        #     return None
 
         new_hash_index = self.hash_index(key)
-        return self.hash_table[new_hash_index]
+        # return self.hash_table[new_hash_index]
+
+        if self.hash_table[new_hash_index] == None:
+            #print("KEY NOT FOUND")
+            return None
+
+
+        current_next = self.hash_table[new_hash_index].next
+        current_node = self.hash_table[new_hash_index]
+
+
+
+        if current_next == None:
+            if current_node.key == key:
+                return self.hash_table[new_hash_index].value
+            else: 
+                return None
+        ## if it's a collison:
+        else:        
+            #print("COLLISION")
+            while current_next is not None:
+                ## compare with original key
+                # if key matches, return original value
+                if current_node.key == key:
+                    #print("FOUND IT")
+                    #print(current_node.value)
+                    return current_node.value
+                # if not found, return None
+                # else:
+                #     print("COULDN'T FIND IT")
+                #     return None
+                #print(f'CURRENT Node {current_node}')
+                current_node = current_node.next
+                #print(f'CURRENT Node {current_node}')
+        
+        
+        
+        
+
+        # #current = self.head
+        # current = self.hash_table[new_hash_index]
+        # while current is not None:
+        #     if current.key == key:
+        #         return current
+            
+        #     current = current.next
 
 
 
@@ -205,15 +349,25 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        '''
+        
         #rule of thumb: resize when the load factor is greater than .7
         self.capacity = new_capacity
-        for item in self.hash_table:
-            self.put(item.key, item.value)
-        '''
-        pass
 
-        
+        #saving the old hash table
+        old_hash_table = self.hash_table
+
+        #creating a new hash table with bigger capacity
+        self.hash_table = [None] * self.capacity
+
+        for item in old_hash_table:
+            if item.next == None:
+                self.put(item.key, item.value)
+            else:
+                while item.next is not None:
+                    self.put(item.key, item.value)
+                    item = item.next
+                self.put(item.key, item.value)
+
 
 
 
@@ -231,15 +385,11 @@ if __name__ == "__main__":
     ht.put("key-8", "val-8")
     ht.put("key-9", "val-9")
 
-    #return_value = ht.get("key-0")
-
-    # print(ht.hash_table)
-    print(ht.hash_table)
-    print(ht.get_num_slots())
-    print(ht.get_load_factor())
-
-
-    #print(return_value)
+    # for item in ht.hash_table:
+    #     print(item.value)
+    #     print(item.next)
+    return_value = ht.get("key-0")
+    print(return_value)
 
     # ht.put("line_1", "'Twas brillig, and the slithy toves")
     # ht.put("line_2", "Did gyre and gimble in the wabe:")
@@ -255,27 +405,9 @@ if __name__ == "__main__":
     # ht.put("line_12", "And stood awhile in thought.")
 
     print("")
-    #print(ht.djb2("dog"))
-    # for item in ht.hash_table:
-    #     print(item.value)
 
-    #ht.delete("line_5")
 
     print("")
-
-    # for item in ht.hash_table:
-    #     print(item)
-
-    #print(ht.get("line_8"))
-
-    #print(ht.hash_table)
-
-    #print(ht.hash_index("dog"))
-
-    #print(ht.capacity)
-
-    #print(ht.key)
-
 
 
     # # Test storing beyond capacity
