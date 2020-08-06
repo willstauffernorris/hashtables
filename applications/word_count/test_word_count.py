@@ -7,9 +7,11 @@ class TestWordCount(unittest.TestCase):
 
     def test_word_count(self):
         x = word_count("")
+        #print(x)
         self.assertTrue(x == {})
 
         x = word_count("Hello    hello")
+        #print(x)
         self.assertTrue(x == {"hello": 2})
 
         x = word_count('Hello, my cat.  And my cat doesn\'t say "hello" back.')
